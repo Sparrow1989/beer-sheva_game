@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+<meta charset="UTF-8">
+<title>Be'er Sheva Street Quiz</title>
+
+<style>
+    #resultText {
+    margin-top: 10px;
+    font-size: 16px;
+    min-height: 24px;
+}
+
+.correct {
+    background-color: #2ecc71 !important;
+}
+
+.wrong {
+    background-color: #e74c3c !important;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #1f1f2e, #2c2c3c);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.game-container {
+    background: #2b2b3d;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    text-align: center;
+    width: 500px;
+    position: relative;
+}
+
+h1 {
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+#street {
+    font-size: 20px;
+    margin-bottom: 25px;
+}
+
+.options {
+    display: grid;
+    gap: 15px;
+}
+
+button {
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    background: #3a3a55;
+    color: white;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #5a5ad6;
+    transform: scale(1.03);
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+img {
+    display:block;
+    margin: 25px auto 0 auto;
+    width: 150px;
+
+    animation: pop 0.3s ease;
+}
+
+@keyframes pop {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.score {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.fade {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="game-container fade">
+
+<div class="score">
+Score: <span id="score">0</span>
+</div>
+
+<h1>Guess the Neighborhood 🏙</h1>
+
+<div id="street"></div>
+
+<div id="options" class="options"></div>
+
+<img id="resultImage">
+<div id="resultText"></div>
+</div>
+
+<script>
+let correctAnswer = "";
+let score = 0;
+
+function loadQuestion() {
+    fetch("/question")
+        .then(res => res.json())
+        .then(data => {
+
+            document.getElementById("street").innerText =
+                "לאיזו שכונה שייכת הרחוב: " + data.street;
+
+            correctAnswer = data.answer;
+
+            const optionsDiv = document.getElementById("options");
+            optionsDiv.innerHTML = "";
+
+            data.options.forEach(option => {
+                const btn = document.createElement("button");
+                btn.innerText = option;
+                btn.onclick = () => checkAnswer(option, btn);
+                optionsDiv.appendChild(btn);
+            });
+
+            const img = document.getElementById("resultImage");
+            img.style.display = "none";
+        });
+}
+
+function checkAnswer(selected) {
+
+    const buttons = document.querySelectorAll("button");
+    const img = document.getElementById("resultImage");
+    const resultText = document.getElementById("resultText");
+
+    buttons.forEach(btn => {
+        btn.disabled = true;
+
+        if (btn.innerText === correctAnswer) {
+            btn.classList.add("correct");
+        }
+
+        if (btn.innerText === selected && selected !== correctAnswer) {
+            btn.classList.add("wrong");
+        }
+    });
+
+    if (selected === correctAnswer) {
+        img.src = "/static/correct.png";
+        score++;
+        resultText.innerText = "נכון!";
+    } else {
+        img.src = "/static/wrong.png";
+        resultText.innerText = "טעות! התשובה הנכונה: " + correctAnswer;
+    }
+
+    document.getElementById("score").innerText = score;
+    img.style.display = "block";
+
+    setTimeout(() => {
+        resultText.innerText = "";
+        loadQuestion();
+    }, 2500);
+}
+
+
+loadQuestion();
+</script>
+
+</body>
+</html>
