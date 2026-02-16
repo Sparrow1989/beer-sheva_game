@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify
 import pandas as pd
+df = ps.read_excel("street-names.xlsx")
 import random
 
 app = Flask(__name__)
@@ -34,3 +35,4 @@ def question():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
